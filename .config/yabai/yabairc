@@ -1,0 +1,46 @@
+# load script additions
+sudo yabai --load-sa
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+
+# appearance settings
+yabai -m config insert_feedback_color           0x00FFFFFF
+yabai -m config window_opacity                  on
+yabai -m config window_opacity_duration         0.15
+yabai -m config active_window_opacity           1.00
+yabai -m config normal_window_opacity           0.90
+yabai -m config window_shadow                   float
+yabai -m config window_border                   off
+yabai -m config window_animation_duration       0.00
+yabai -m config window_border_blur              off
+yabai -m config normal_window_border_color      0x00555555
+yabai -m config active_window_border_color      0x001366FC
+
+# mouse settings
+yabai -m config mouse_modifier          fn
+yabai -m config mouse_action1           move
+yabai -m config mouse_action2           resize
+yabai -m config mouse_drop_action       swap
+
+# layout settings
+yabai -m config split_ratio             0.65
+yabai -m config window_placement        second_child
+yabai -m config window_origin_display   focused
+yabai -m config top_padding             12
+yabai -m config bottom_padding          12
+yabai -m config left_padding            12
+yabai -m config right_padding           12
+yabai -m config window_gap              12
+yabai -m config layout                  bsp
+
+# fix layout on screen changes
+yabai -m signal event="display_resized" action="yabai -m space --toggle gap; yabai -m space --toggle gap"
+
+# overrides
+export UNMANAGED="^(Maps|Music|Logi Options+|Outlook|Photos|Font Book|Installer|Bitwarden|Disk Utility|Notability|Python|Reminders|PrusaSlicer|Raycast|Viscosity|Gifox|Docker Desktop|Microsoft Remote Desktop|Google Drive|Grammarly Desktop|NordVPN|Notes|Spark|Messages|Calendar|zoom.us|Microsoft Teams|WhatsApp|Spotify|System Information|System Settings|Activity Monitor|Finder|Preview|App Store|Stats|Find My)$"
+export AUTO_STACK="^(Code)$"
+
+yabai -m rule --add app="${UNMANAGED}" manage=off 
+yabai -m rule --add title="Picture in Picture" opacity=1.0
+yabai -m rule --add app="Hammerspoon" manage=off layer="below"
+yabai -m signal --add app="${AUTO_STACK}" event=window_created action="~/.local/bin/yabai-helper auto-stack"
+

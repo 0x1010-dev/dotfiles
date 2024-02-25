@@ -1,0 +1,12 @@
+# python poetry
+alias psh="poetry shell"
+alias padd="poetry add"
+alias pinstall="poetry install"
+alias premove="poetry remove"
+alias pupdate="poetry update"
+
+# nvim
+alias vi="nvim"
+
+# mosh
+alias mosh="mosh-with-jump"
