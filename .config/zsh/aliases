@@ -10,3 +10,6 @@ alias vi="nvim"
 
 # mosh
 alias mosh="mosh-with-jump"
+
+# bat
+alias bat="batcat"

@@ -1,0 +1,162 @@
+#!/bin/bash
+
+# Define files for log, process ID, and reference counting
+PIDFILE="/tmp/tsh.pid"
+REFCOUNTFILE="/tmp/tsh.ref"
+LOGFILE="/tmp/tsh.log"
+
+# Function to display usage
+usage() {
+    echo "Usage: $0 [OPTION]..."
+    echo "Connects to a devtunnel instance and runs an SSH-based command based on the OPTIONs passed."
+    echo ""
+    echo "Options:"
+    echo "  --jump, -J       Use SSH -J option with the forwarded port"
+    echo "  --sshuttle, -S   Use sshuttle with the forwarded port"
+    echo "  -h, --help       Display this help and exit"
+    echo ""
+    echo "Without any OPTION, defaults to 'ssh -p forwarded_port localhost'."
+    echo ""
+}
+
+# Check for help flag
+if [[ " $@ " =~ " -h " ]] || [[ " $@ " =~ " --help " ]]; then
+    usage
+    exit 0
+fi
+
+# Function to ensure devtunnel is installed
+check_devtunnel_installed() {
+  if ! command -v devtunnel &> /dev/null; then
+    echo "tsh: 'devtunnel' is not installed." >&2
+    exit 1
+  fi
+}
+
+# Function to check if the PID in PIDFILE is still running as a devtunnel process
+is_process_running() {
+  local pid=$1
+  if [ -z "$pid" ]; then
+    return 1
+  fi
+  if ps -p "$pid" | grep -q "devtunnel"; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+# Start devtunnel and manage reference counting
+start_devtunnel() {
+  if [ ! -f "$REFCOUNTFILE" ]; then
+    echo 0 > "$REFCOUNTFILE"
+  fi
+
+  if [ -f "$PIDFILE" ]; then
+    pid=$(cat "$PIDFILE")
+    if ! is_process_running "$pid"; then
+      # The process is not running. Reset PIDFILE and REFCOUNT.
+      echo "tsh: Detected stale PID file. Cleaning up." >&2
+      rm -f "$PIDFILE"
+      echo 0 > "$REFCOUNTFILE"
+    fi
+  fi
+
+  if [ ! -f "$PIDFILE" ]; then
+    echo "tsh: Starting a new 'devtunnel' instance." >&2
+    devtunnel connect 2>&1 > "$LOGFILE" &
+    echo $! > "$PIDFILE"
+  else
+    echo "tsh: Attaching to existing 'devtunnel' instance." >&2
+  fi
+
+  # Increment the reference count
+  ref=$(<"$REFCOUNTFILE")
+  ((ref++))
+  echo $ref > "$REFCOUNTFILE"
+}
+
+# Extract the forwarded port number
+extract_forward_port() {
+  local timeout=30
+  echo "tsh: Waiting for 'devtunnel' to output the forwarding port information..." >&2 
+
+  while [ $timeout -gt 0 ]; do
+    if grep -q "to host port 22" "$LOGFILE"; then
+      local port=$(grep 'SSH: Forwarding from' "$LOGFILE" | grep 'to host port 22' | head -n 1 | sed -r 's/.*127.0.0.1:([0-9]+).*/\1/')
+      echo "tsh: Forwarding port ($port) detected." >&2
+      echo "$port"
+      return
+    else
+      sleep 1
+      ((timeout--))
+    fi
+  done
+
+  echo "tsh: Timeout while waiting for devtunnel to provide the forwarded port." >&2
+  return 1
+}
+
+# Function for clean exit
+clean_exit() {
+  if [ -f "$REFCOUNTFILE" ]; then
+    # Decrement the reference count and only stop devtunnel if it reaches 0
+    ref=$(<"$REFCOUNTFILE")
+    ((ref--))
+    echo $ref > "$REFCOUNTFILE"
+
+    if [ "$ref" -eq 0 ]; then
+      if [ -f "$PIDFILE" ]; then
+        pid=$(cat "$PIDFILE")
+        if is_process_running "$pid"; then
+          echo "tsh: No more clients running, closing 'devtunnel' instance."
+          kill "$pid"
+        fi
+        rm -f "$PIDFILE"
+      fi
+      rm -f "$REFCOUNTFILE"
+      rm -f "$LOGFILE"
+    fi
+  fi
+  exit
+}
+
+# Set a trap for clean script termination
+trap 'clean_exit' SIGINT SIGTERM EXIT
+
+# Choose and run the SSH command based on input flags
+run_ssh_command() {
+  local port=$1
+  shift
+  case "$1" in
+    --jump|-J)
+      shift
+      ssh -o "StrictHostKeyChecking no" -J "localhost:$port" "$@"
+      ;;
+
+    --sshuttle|-S)
+      shift
+      sshuttle -e "ssh -o 'StrictHostKeyChecking no'" -r "localhost:$port" "$@"
+      ;;
+
+    *)
+      ssh -o "StrictHostKeyChecking no" -p "$port" localhost "$@"
+      ;;
+  esac
+}
+
+main() {
+  check_devtunnel_installed
+  start_devtunnel
+  port=$(extract_forward_port)
+
+  if [ -z "$port" ]; then
+    echo "tsh: Failed to extract the forwarded port. Exiting." >&2
+    exit 1
+  fi
+
+  run_ssh_command "$port" "$@"
+}
+
+main "$@"
+

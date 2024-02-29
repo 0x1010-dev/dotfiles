@@ -18,11 +18,16 @@ antigen bundle rsync
 antigen bundle vscode
 antigen bundle vi-mode
 antigen bundle lukechilds/zsh-nvm
-antigen bundle agkozak/zsh-z
 antigen bundle greymd/docker-zsh-completion
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-syntax-highlighting
 antigen bundle MichaelAquilina/zsh-autoswitch-virtualenv
+
+if ! [ -f $HOME/.local/bin/zoxide ]; then
+    antigen bundle agkozak/zsh-z
+else
+    antigen bundle zoxide
+fi
 
 # load theme
 antigen theme romkatv/powerlevel10k
@@ -39,17 +44,3 @@ antigen apply
 
 # iterm2 integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-# Shell-GPT integration ZSH v0.2
-_sgpt_zsh() {
-if [[ -n "$BUFFER" ]]; then
-    _sgpt_prev_cmd=$BUFFER
-    BUFFER+="⌛"
-    zle -I && zle redisplay
-    BUFFER=$(sgpt --shell <<< "$_sgpt_prev_cmd" --no-interaction)
-    zle end-of-line
-fi
-}
-zle -N _sgpt_zsh
-bindkey ^l _sgpt_zsh
-# Shell-GPT integration ZSH v0.2
