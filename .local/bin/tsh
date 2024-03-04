@@ -142,7 +142,6 @@ cleanup() {
 # always cleanup on script termination
 trap 'cleanup' EXIT
 
-
 # command parsing
 parse_command() {
   local port=$1; shift
@@ -158,7 +157,7 @@ parse_command() {
         shift 2
         ;;
 
-      proxy|shell|fwd|fs|cmd)
+      proxy|shell|fwd|fs|cmd|match)
         cmd="$1"
         shift
         break
@@ -188,6 +187,7 @@ parse_command() {
   # execute command
   case $cmd in
     shell)
+      log "Starting ssh session to target..."
       if [[ -n $jump ]]; then
         ssh "${SSH_OPTS[@]}" $opts -J $jump $dest $@
       else
@@ -196,6 +196,7 @@ parse_command() {
       ;;
 
     proxy)
+      log "Starting sshuttle session to target..."
       if [[ -n $jump ]]; then
         sshuttle -e "ssh ${SSH_OPTS[*]} -J $jump" $opts -x localhost:$port -r $dest $@
       else
@@ -204,6 +205,7 @@ parse_command() {
       ;;
     
     fwd)
+      log "Forwarding port $2 -> $1..."
       if [[ -n $jump ]]; then
         ssh "${SSH_OPTS[@]}" $opts -J $jump -N -L $2:localhost:$1 $dest
       else
@@ -212,6 +214,7 @@ parse_command() {
       ;;
 
     fs)
+      log "Mounting filesystem from target..."
       if [[ -n $jump ]]; then
         sshfs $dest:$@ -o "ssh_command=ssh ${SSH_OPTS[*]} -J $jump" -f $opts
       else
@@ -223,27 +226,48 @@ parse_command() {
       cmd=$(echo "$@" | host="localhost" port="$port" envsubst)
       $cmd
       ;;
+
+    match)
+      log "Adding Match to ssh config for host '$@'..."
+
+      # add new entry
+      if [[ -n $jump ]]; then
+        CONFIG="Match final host $@\n\tProxyJump $jump,$dest"
+        echo -e "$CONFIG" >> ~/.ssh/config
+      else
+        CONFIG="Match final host $@\n\tProxyJump localhost:$port"
+        echo -e "$CONFIG" >> ~/.ssh/config
+      fi
+
+      trap 'break' SIGINT
+      log "Tunnel session is running. Press CTRL+C to exit."
+      while true; do
+        sleep 1
+      done
+
+      log "Removing Match entry from ssh config..."
+      sed -i "/^Match final host .*$/,/^$/d" ~/.ssh/config
   esac
 }
 
 usage() {
-  echo "Usage: tsh [-t hosts] <command> [args...]"
+  echo "Usage: tsh [-t hosts] [*] <command> [args...]"
   echo
   echo "Options:"
   echo "  -t, --target <hosts>      Specify target host. Multiple comma-separated hosts"
   echo "                            are used as jump hosts until the last one. If no target"
   echo "                            is specified, connection is made to tunnel host."
-  echo
   echo "  *                         Any other options are passed down to the underlying"
   echo "                            command."
   echo
   echo "Commands:"
-  echo "  shell                     Open an SSH session to target."
-  echo "  proxy                     Forwards traffic over SSH (using sshuttle)."
-  echo "  fwd <remote> <local>      Forwards port to target host."
-  echo "  fs <remote> <local>       Mount remote filesystem."
   echo "  cmd '<cmd>'               Executes command, interpolating the host and port"
   echo '                            to the forwarded port as $host and $port.'
+  echo "  fs <remote> <local>       Mount remote filesystem."
+  echo "  fwd <remote> <local>      Forwards port to target host."
+  echo "  match <host>              Add Match entry to SSH config to ProxyJump using tunnel."
+  echo "  proxy                     Forwards traffic over SSH (using sshuttle)."
+  echo "  shell                     Open an SSH session to target."
   echo
   echo "Any additional arguments are passed down to the underlying command."
   exit 1
