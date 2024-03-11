@@ -23,30 +23,23 @@ let INSTANCE_ID="$(instance_count) - 1"
 
 log() {
   local msg=$1
-  echo "tsh:$INSTANCE_ID: $msg" >&2
+  echo "tsh[$INSTANCE_ID]: $msg" >&2
 }
 
 # checks if an instance of devtunnel is already running (by pid)
 is_devtunnel_running() {
   if [[ -e "$PIDFILE" ]]; then
-    pid=$(cat "$PIDFILE")
+    read -r pid < "$PIDFILE"
 
-    # no pid stored
-    if [[ -z "$pid" ]]; then
-      log "Detected empty PID file. Cleaning up."
-      rm -f "$PIDFILE"
-      return 1
-    fi
-
-    # check if pid belong to devtunnel
-    if ps -p "$pid" | grep -q "devtunnel"; then
-      echo "$pid"
-      return 0
-    else
+    # check if pid is associated with devtunnel
+    if [[ -z "$pid" ]] || ! ps -p "$pid" | grep -q "devtunnel"; then
       log "Detected stale PID file. Cleaning up."
       rm -f "$PIDFILE"
       return 1
     fi
+
+    echo "$pid"
+    return 0
   fi
 
   return 1
@@ -54,14 +47,12 @@ is_devtunnel_running() {
 
 # start devtunnel and manage reference counting
 start_devtunnel() {
-  if [[ ! -e $DEVTUNNEL ]]; then
+  if [[ ! -x $DEVTUNNEL ]]; then
     log "devtunnel is not installed."
     exit 1
-  fi
-
-  if ! is_devtunnel_running >/dev/null; then
+  elif ! is_devtunnel_running >/dev/null; then
     log "Starting a new devtunnel instance."
-    devtunnel connect 2>&1 > "$LOGFILE" &
+    $DEVTUNNEL connect 2>&1 > "$LOGFILE" &
     echo $! > "$PIDFILE"
   else
     log "Attaching to existing devtunnel instance."
@@ -97,9 +88,8 @@ cleanup() {
     if [[ $? -eq 0 ]]; then
       log "No more clients running, closing devtunnel instance."
       kill "$pid"
-      rm -f "$PIDFILE"
+      rm -f "$PIDFILE" "$LOGFILE"
     fi
-    rm -f "$LOGFILE"
   fi
 
   exit

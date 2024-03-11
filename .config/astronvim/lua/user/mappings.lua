@@ -4,10 +4,10 @@ local mappings = {
     -- write as sudo
     ["<leader>W"] = { ":SudaWrite<cr>", desc = "Sudo Write" },
     -- tmux vim navigator
-    ["<C-h>"] = { "<cmd> TmuxNavigateLeft<CR>", desc = "Window Left" },
-    ["<C-l>"] = { "<cmd> TmuxNavigateRight<CR>", desc = "Window Right" },
-    ["<C-j>"] = { "<cmd> TmuxNavigateDown<CR>", desc = "Window Down" },
-    ["<C-k>"] = { "<cmd> TmuxNavigateUp<CR>", desc = "Window Up" },
+    -- ["<C-h>"] = { "<cmd> TmuxNavigateLeft<CR>", desc = "Window Left" },
+    -- ["<C-l>"] = { "<cmd> TmuxNavigateRight<CR>", desc = "Window Right" },
+    -- ["<C-j>"] = { "<cmd> TmuxNavigateDown<CR>", desc = "Window Down" },
+    -- ["<C-k>"] = { "<cmd> TmuxNavigateUp<CR>", desc = "Window Up" },
     -- buffer switching
     ["<Tab>"] = {
       function()

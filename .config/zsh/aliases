@@ -13,3 +13,6 @@ alias mosh="mosh-with-jump"
 
 # bat
 alias bat="batcat"
+
+# hp
+alias hp-proxy="tsh -t corvallis -NH proxy 15.0.0.0/24"
