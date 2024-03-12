@@ -17,6 +17,9 @@ antigen bundle git
 antigen bundle rsync
 antigen bundle vscode
 antigen bundle vi-mode
+antigen bundle docker
+antigen bundle docker-compose
+antigen bundle poetry
 antigen bundle lukechilds/zsh-nvm
 antigen bundle greymd/docker-zsh-completion
 antigen bundle zsh-users/zsh-autosuggestions
