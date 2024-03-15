@@ -1,0 +1,263 @@
+#!/bin/bash
+
+# configuration
+SSH_OPTS=(-o "StrictHostKeyChecking=no")
+SSH_BASTION="tsh.bastion"
+
+# define files for log, pid, and ref counting
+PIDFILE="/tmp/tsh.pid"
+LOGFILE="/tmp/tsh.log"
+
+# devtunnel
+DEVTUNNEL=$(command -v devtunnel)
+
+# instance counter
+SCRIPT_NAME=$0
+
+instance_count() {
+	# let count="$(pgrep -afl bash | grep "$SCRIPT_NAME" | grep -v $$ | wc -l) - 1"
+	# echo $count
+	pgrep -aflc "bash.*$SCRIPT_NAME"
+}
+
+((INSTANCE_ID = "$(instance_count) - 1"))
+
+log() {
+	local msg=$1
+	echo "tsh[$INSTANCE_ID]: $msg" >&2
+}
+
+# checks if an instance of devtunnel is already running (by pid)
+is_devtunnel_running() {
+	if [[ -e "$PIDFILE" ]]; then
+		read -r pid <"$PIDFILE"
+
+		# check if pid is associated with devtunnel
+		if [[ -z "$pid" ]] || ! ps -p "$pid" | grep -q "devtunnel"; then
+			log "Detected stale PID file. Cleaning up."
+			rm -f "$PIDFILE"
+			return 1
+		fi
+
+		echo "$pid"
+		return 0
+	fi
+
+	return 1
+}
+
+# start devtunnel and manage reference counting
+start_devtunnel() {
+	if [[ ! -x $DEVTUNNEL ]]; then
+		log "devtunnel is not installed."
+		exit 1
+	elif ! is_devtunnel_running >/dev/null; then
+		log "Starting a new devtunnel instance."
+		$DEVTUNNEL connect >"$LOGFILE" 2>&1 &
+		echo $! >"$PIDFILE"
+	else
+		log "Attaching to existing devtunnel instance."
+	fi
+}
+
+# extract forwarded port number
+get_devtunnel_local_port() {
+	local timeout=30
+	local host_port=$1
+
+	while [[ $timeout -gt 0 ]]; do
+		if grep -q "to host port $host_port" "$LOGFILE"; then
+			local_port=$(grep "SSH: Forwarding from" "$LOGFILE" | grep "to host port $host_port" | head -n 1 | sed -r "s/.*127.0.0.1:([0-9]+).*/\1/")
+			log "Found port forward $local_port -> $host_port."
+			echo "$local_port"
+			return
+		else
+			sleep 1
+			((timeout--))
+		fi
+	done
+
+	log "Timeout while waiting for devtunnel to provide the forwarded port."
+	return 1
+}
+
+setup_bastion() {
+	local port=$1
+
+	CONFIG="Host $SSH_BASTION\n\tHostName localhost\n\tPort $port"
+	echo -e "$CONFIG" >>~/.ssh/config
+}
+
+cleanup_bastion() {
+	sed -i "/^Host $SSH_BASTION.*$/,/^$/d" ~/.ssh/config
+}
+
+# cleanup on exit
+cleanup() {
+	# cleanup if no more instances
+	if [[ $(instance_count) -eq 1 ]]; then
+		pid=$(is_devtunnel_running)
+		if [[ $? -eq 0 ]]; then
+			log "No more clients running, closing devtunnel instance."
+			kill "$pid"
+			rm -f "$PIDFILE" "$LOGFILE"
+			cleanup_bastion
+		fi
+	fi
+
+	exit
+}
+
+# always cleanup on script termination trap 'cleanup' EXIT
+
+# command parsing
+parse_command() {
+	local port=$1
+	shift
+	local opts=""
+	local target=""
+	local cmd=""
+
+	# parse arguments
+	while [[ "$#" -gt 0 ]]; do
+		case $1 in
+		-t | --target)
+			target="$2"
+			shift 2
+			;;
+
+		proxy | shell | fwd | fs | cmd | match)
+			cmd="$1"
+			shift
+			break
+			;;
+
+		*)
+			opts="$opts $1"
+			shift
+			;;
+		esac
+	done
+
+	# parse target
+	local jump=""
+	local dest=""
+	if [[ -n $target ]]; then
+		if [[ $target == *","* ]]; then
+			# the last host in the comma separated target string is the target
+			jump="localhost:$port,${target%,*}"
+			dest="${target##*,}"
+		else
+			jump="localhost:$port"
+			dest=$target
+		fi
+	fi
+
+	# execute command
+	case $cmd in
+	shell)
+		log "Starting ssh session to target..."
+		if [[ -n $jump ]]; then
+			ssh "${SSH_OPTS[@]}" ${opts:+} -J "$jump" "$dest" "$@"
+		else
+			ssh "${SSH_OPTS[@]}" ${opts:+} -p "$port" localhost "$@"
+		fi
+		;;
+
+	proxy)
+		log "Starting sshuttle session to target..."
+		if [[ -n $jump ]]; then
+			sshuttle -e "ssh ${SSH_OPTS[*]} -J $jump" ${opts:+} -x "localhost:$port" -r "$dest" "$@"
+		else
+			sshuttle -e "ssh ${SSH_OPTS[*]}" ${opts:+} -x "localhost:$port" -r "localhost:$port" "$@"
+		fi
+		;;
+
+	fwd)
+		log "Forwarding port $2 -> $1..."
+		if [[ -n $jump ]]; then
+			ssh "${SSH_OPTS[@]}" ${opts:+} -J "$jump" -N -L "$2:localhost:$1" "$dest"
+		else
+			ssh "${SSH_OPTS[@]}" ${opts:+} -p "$port" -N -L "$2:localhost:$1" localhost
+		fi
+		;;
+
+	fs)
+		log "Mounting filesystem from target..."
+		if [[ -n $jump ]]; then
+			sshfs "$dest:$*" -o "ssh_command=ssh ${SSH_OPTS[*]} -J $jump" -f ${opts:+}
+		else
+			sshfs "localhost:$*" -p "$port" -o "ssh_command=ssh ${SSH_OPTS[*]}" -f ${opts:+}
+		fi
+		;;
+
+	cmd)
+		cmd=$(echo "$@" | host="localhost" port="$port" envsubst)
+		$cmd
+		;;
+
+	match)
+		log "Adding Match to ssh config for host '$*'..."
+
+		# add new entry
+		if [[ -n $jump ]]; then
+			CONFIG="Match final host $*\n\tProxyJump $jump,$dest"
+			echo -e "$CONFIG" >>~/.ssh/config
+		else
+			CONFIG="Match final host $*\n\tProxyJump localhost:$port"
+			echo -e "$CONFIG" >>~/.ssh/config
+		fi
+
+		trap 'break' SIGINT
+		log "Tunnel session is running. Press CTRL+C to exit."
+		while true; do
+			sleep 1
+		done
+
+		log "Removing Match entry from ssh config..."
+		sed -i "/^Match final host .*$/,/^$/d" ~/.ssh/config
+		;;
+	esac
+}
+
+usage() {
+	echo "Usage: tsh [-t hosts] [*] <command> [args...]"
+	echo
+	echo "Options:"
+	echo "  -t, --target <hosts>      Specify target host. Multiple comma-separated hosts"
+	echo "                            are used as jump hosts until the last one. If no target"
+	echo "                            is specified, connection is made to tunnel host."
+	echo "  *                         Any other options are passed down to the underlying"
+	echo "                            command."
+	echo
+	echo "Commands:"
+	echo "  cmd '<cmd>'               Executes command, interpolating the host and port"
+	echo '                            to the forwarded port as $host and $port.'
+	echo "  fs <remote> <local>       Mount remote filesystem."
+	echo "  fwd <remote> <local>      Forwards port to target host."
+	echo "  match <host>              Add Match entry to SSH config to ProxyJump using tunnel."
+	echo "  proxy                     Forwards traffic over SSH (using sshuttle)."
+	echo "  shell                     Open an SSH session to target."
+	echo
+	echo "Any additional arguments are passed down to the underlying command."
+	exit 1
+}
+
+main() {
+	start_devtunnel
+	port=$(get_devtunnel_local_port 22)
+
+	if [[ -z "$port" ]]; then
+		log "Exiting."
+		exit 1
+	fi
+
+	parse_command "$port" "$@"
+}
+
+if [[ $# -lt 1 ]]; then
+	usage
+	exit 1
+fi
+
+main "$@"

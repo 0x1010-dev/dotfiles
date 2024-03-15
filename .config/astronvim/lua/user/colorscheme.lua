@@ -1,1 +1,2 @@
-return "catppuccin-macchiato"
+return "catppuccin"
+-- return "kanagawa"

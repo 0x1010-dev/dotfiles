@@ -1,9 +1,6 @@
 # nvim
 alias vi="nvim"
 
-# bat
-alias bat="batcat"
-
 # lsd
 if [[ -x $(command -v lsd) ]]; then
   alias ls="lsd"

@@ -1,27 +1,3 @@
-# the fuck
-if [[ -e $commands[thefuck] ]]; then
-    # register alias
-    [[ ! -a $ZSH_CACHE_DIR/thefuck ]] && thefuck --alias --enable-experimental-instant-mode > $ZSH_CACHE_DIR/thefuck
-    source $ZSH_CACHE_DIR/thefuck
-
-    # shortcuts
-    fuck-cmd() {
-        local FUCK="$(THEFUCK_REQUIRE_CONFIRMATION=0 thefuck $(fc -ln -1 | tail -n 1) 2> /dev/null)"
-        [[ -z $FUCK ]] && echo -n -e "\a" && return
-        BUFFER=$FUCK
-        zle end-of-line
-    }
-    zle -N fuck-cmd
-    bindkey -M emacs '\e\e' fuck-cmd
-    bindkey -M vicmd '\e\e' fuck-cmd
-    bindkey -M viins '\e\e' fuck-cmd
-fi
-
-# rdp tunnel
-function rdpt() {
-    ssh -L 33389:$1:3389 -Nv tunnel
-}
-
 # ShellGPT
 _sgpt_zsh() {
 if [[ -n "$BUFFER" ]]; then
@@ -33,5 +9,5 @@ if [[ -n "$BUFFER" ]]; then
 fi
 }
 zle -N _sgpt_zsh
-bindkey ^l _sgpt_zsh
+bindkey ^p _sgpt_zsh
 

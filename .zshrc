@@ -47,3 +47,6 @@ antigen apply
 
 # iterm2 integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+# To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
+[[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
