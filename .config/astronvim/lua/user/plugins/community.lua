@@ -7,6 +7,8 @@ return {
 	-- { import = "astrocommunity.bars-and-lines.dropbar-nvim" },
 	{ import = "astrocommunity.bars-and-lines.heirline-vscode-winbar" },
 	{ import = "astrocommunity.bars-and-lines.vim-illuminate" },
+	-- Code Runner
+	{ import = "astrocommunity.code-runner.sniprun",                  enabled = false },
 	-- Diagnostics
 	{ import = "astrocommunity.diagnostics.lsp_lines-nvim" },
 	-- Editing Support
@@ -29,6 +31,8 @@ return {
 	{ import = "astrocommunity.pack.typescript" },
 	{ import = "astrocommunity.pack.vue" },
 	{ import = "astrocommunity.pack.yaml" },
+	-- Utility
+	{ import = "astrocommunity.utility.noice-nvim" },
 	-- Configuration
 	{
 		"catppuccin",
@@ -56,6 +60,24 @@ return {
 		"lsp_lines.nvim",
 		opts = {
 			only_current_line = true,
+		},
+	},
+	{
+		"mason.nvim",
+		opts = {
+			PATH = "append",
+		},
+	},
+	{
+		"sniprun",
+		opts = {
+			display = { "TerminalWithCode" },
+			selected_interpreters = {
+				"Python3_fifo",
+			},
+			repl_enable = {
+				"Python3_fifo",
+			},
 		},
 	},
 }

@@ -45,6 +45,9 @@ antigen apply
 [[ ! -f $CONFIG/functions ]] || source $CONFIG/functions
 [[ ! -f $CONFIG/variables ]] || source $CONFIG/variables
 
+# local configuration (not in .dotfiles)
+[[ ! -f $CONFIG/local ]] || source $CONFIG/local
+
 # iterm2 integration
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
