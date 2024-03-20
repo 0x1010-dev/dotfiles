@@ -1,7 +1,7 @@
 return {
 	"AstroNvim/astrocommunity",
 	-- Color Schemes
-	{ import = "astrocommunity.colorscheme.catppuccin",               enabled = true },
+	{ import = "astrocommunity.colorscheme.catppuccin",               enabled = false },
 	{ import = "astrocommunity.colorscheme.kanagawa-nvim",            enabled = false },
 	-- Bars & Lines
 	-- { import = "astrocommunity.bars-and-lines.dropbar-nvim" },
@@ -10,7 +10,7 @@ return {
 	-- Code Runner
 	{ import = "astrocommunity.code-runner.sniprun",                  enabled = false },
 	-- Diagnostics
-	{ import = "astrocommunity.diagnostics.lsp_lines-nvim" },
+	{ import = "astrocommunity.diagnostics.lsp_lines-nvim",           enabled = true },
 	-- Editing Support
 	{ import = "astrocommunity.editing-support.cutlass-nvim" },
 	{ import = "astrocommunity.editing-support.multicursors-nvim" },
@@ -20,17 +20,6 @@ return {
 	{ import = "astrocommunity.editing-support.wildfire-nvim" },
 	-- Motion
 	{ import = "astrocommunity.motion.mini-surround" },
-	-- Language Packs
-	{ import = "astrocommunity.pack.bash" },
-	{ import = "astrocommunity.pack.docker" },
-	{ import = "astrocommunity.pack.html-css" },
-	{ import = "astrocommunity.pack.json" },
-	{ import = "astrocommunity.pack.lua" },
-	{ import = "astrocommunity.pack.markdown" },
-	{ import = "astrocommunity.pack.python" },
-	{ import = "astrocommunity.pack.typescript" },
-	{ import = "astrocommunity.pack.vue" },
-	{ import = "astrocommunity.pack.yaml" },
 	-- Utility
 	{ import = "astrocommunity.utility.noice-nvim" },
 	-- Configuration
@@ -64,9 +53,9 @@ return {
 	},
 	{
 		"mason.nvim",
-		opts = {
-			PATH = "append",
-		},
+		opts = function(_, opts)
+			opts.PATH = "append"
+		end,
 	},
 	{
 		"sniprun",

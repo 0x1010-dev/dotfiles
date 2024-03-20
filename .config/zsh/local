@@ -3,7 +3,7 @@ export SSH_AUTH_SOCK=~/.1password/agent.sock
 source /home/luis/.config/op/plugins.sh
 
 # disable automatic activation
-export CONDA_AUTO_ACTIVATE_BASE=false
+export CONDA_AUTO_ACTIVATE_BASE=true
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!

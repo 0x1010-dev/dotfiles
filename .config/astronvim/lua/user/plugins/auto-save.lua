@@ -10,8 +10,8 @@ return {
 		},
 		trigger_events = {
 			immediate_save = { "BufLeave" },
-			defer_save = { "InsertLeave" },
-			cancel_defered_save = { "InsertEnter" },
+			-- defer_save = { "InsertLeave" },
+			-- cancel_defered_save = { "InsertEnter" },
 		},
 	},
 }

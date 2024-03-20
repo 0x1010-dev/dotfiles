@@ -9,7 +9,27 @@ return {
 	build = ":UpdateRemotePlugins",
 	ft = "python",
 	init = function()
-		-- vim.g.molten_image_provider = "image.nvim"
+		vim.g.molten_auto_open_html_in_browser = true
+		vim.g.molten_output_virt_lines = true
+
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "MoltenInitPre",
+			callback = function()
+				vim.b[0].autoformat_enabled = false
+			end,
+		})
+
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "MoltenDeinitPre",
+			command = "MoltenSave",
+		})
+
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "MoltenDeinitPost",
+			callback = function()
+				vim.b[0].autoformat_enabled = true
+			end,
+		})
 	end,
 	keys = {
 		{
@@ -18,9 +38,19 @@ return {
 			desc = "Init Kernel",
 		},
 		{
+			prefix .. "e",
+			":MoltenLoad<CR>",
+			desc = "Load Session",
+		},
+		{
 			prefix .. "l",
 			":MoltenEvaluateLine<CR>",
 			desc = "Evaluate Line",
+		},
+		{
+			prefix .. "o",
+			":MoltenEvaluateOperation<CR>",
+			desc = "Evaluate Operator",
 		},
 		{
 			prefix .. "r",
