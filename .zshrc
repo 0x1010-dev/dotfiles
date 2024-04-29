@@ -36,7 +36,6 @@ fi
 
 if [[ -x $(command -v tmux) ]]; then
     antigen bundle tmux
-    typeset -g ZSH_TMUX_AUTOSTART=true
 fi
 
 # load theme
