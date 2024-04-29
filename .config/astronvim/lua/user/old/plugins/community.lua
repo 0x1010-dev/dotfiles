@@ -1,16 +1,16 @@
 return {
 	"AstroNvim/astrocommunity",
 	-- Color Schemes
-	{ import = "astrocommunity.colorscheme.catppuccin",               enabled = false },
-	{ import = "astrocommunity.colorscheme.kanagawa-nvim",            enabled = false },
+	{ import = "astrocommunity.colorscheme.catppuccin", enabled = false },
+	{ import = "astrocommunity.colorscheme.kanagawa-nvim", enabled = false },
 	-- Bars & Lines
 	-- { import = "astrocommunity.bars-and-lines.dropbar-nvim" },
-	{ import = "astrocommunity.bars-and-lines.heirline-vscode-winbar" },
+	-- { import = "astrocommunity.bars-and-lines.heirline-vscode-winbar" },
 	{ import = "astrocommunity.bars-and-lines.vim-illuminate" },
 	-- Code Runner
-	{ import = "astrocommunity.code-runner.sniprun",                  enabled = false },
+	{ import = "astrocommunity.code-runner.sniprun", enabled = false },
 	-- Diagnostics
-	{ import = "astrocommunity.diagnostics.lsp_lines-nvim",           enabled = true },
+	{ import = "astrocommunity.diagnostics.lsp_lines-nvim", enabled = true },
 	-- Editing Support
 	{ import = "astrocommunity.editing-support.cutlass-nvim" },
 	{ import = "astrocommunity.editing-support.multicursors-nvim" },
@@ -26,7 +26,7 @@ return {
 	{
 		"catppuccin",
 		opts = {
-			transparent_background = false,
+			transparent_background = true,
 			dim_inactive = { enabled = true, percentage = 0.40 },
 		},
 	},
@@ -67,6 +67,12 @@ return {
 			repl_enable = {
 				"Python3_fifo",
 			},
+		},
+	},
+	{
+		"cutlass.nvim",
+		opts = {
+			cut_key = "m",
 		},
 	},
 }

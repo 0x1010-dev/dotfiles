@@ -13,9 +13,9 @@ local function is_inside_vim(pane)
 		"sh",
 		"-c",
 		"ps -o state= -o comm= -t"
-		.. wezterm.shell_quote_arg(tty)
-		.. " | "
-		.. "grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?nvim?x?)(diff)?$'",
+			.. wezterm.shell_quote_arg(tty)
+			.. " | "
+			.. "grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?nvim?x?)(diff)?$'",
 	})
 	return success
 end
@@ -37,6 +37,7 @@ end
 
 -- configuration
 
+config.enable_wayland = true
 config.freetype_load_target = "Light"
 -- config.font = wezterm.font 'IosevkaTerm Nerd Font Mono'
 -- config.font = wezterm.font 'CozetteHiDpi'
@@ -46,21 +47,27 @@ config.warn_about_missing_glyphs = false
 
 config.color_scheme = "Catppuccin Mocha"
 
--- config.window_background_opacity = 0.75
+config.window_background_opacity = 0.95
 config.use_fancy_tab_bar = false
 config.tab_max_width = 32
-config.window_decorations = "RESIZE"
+config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 config.enable_scroll_bar = true
+config.max_fps = 255
+
+config.inactive_pane_hsb = {
+	saturation = 0.75,
+	brightness = 0.60,
+}
 
 -- keybindings
 config.leader = { key = "Space", mods = "CTRL" }
 config.keys = {
-	{ key = "l",          mods = "CTRL|SHIFT", action = a.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	{ key = "j",          mods = "CTRL|SHIFT", action = a.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ key = "LeftArrow",  mods = "CTRL",       action = a.AdjustPaneSize({ "Left", 5 }) },
-	{ key = "RightArrow", mods = "CTRL",       action = a.AdjustPaneSize({ "Right", 5 }) },
-	{ key = "DownArrow",  mods = "CTRL",       action = a.AdjustPaneSize({ "Down", 5 }) },
-	{ key = "UpArrow",    mods = "CTRL",       action = a.AdjustPaneSize({ "Up", 5 }) },
+	{ key = "l", mods = "CTRL|SHIFT", action = a.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ key = "j", mods = "CTRL|SHIFT", action = a.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "LeftArrow", mods = "CTRL", action = a.AdjustPaneSize({ "Left", 5 }) },
+	{ key = "RightArrow", mods = "CTRL", action = a.AdjustPaneSize({ "Right", 5 }) },
+	{ key = "DownArrow", mods = "CTRL", action = a.AdjustPaneSize({ "Down", 5 }) },
+	{ key = "UpArrow", mods = "CTRL", action = a.AdjustPaneSize({ "Up", 5 }) },
 	bind_if(is_outside_vim, "h", "CTRL", a.ActivatePaneDirection("Left")),
 	bind_if(is_outside_vim, "l", "CTRL", a.ActivatePaneDirection("Right")),
 	bind_if(is_outside_vim, "j", "CTRL", a.ActivatePaneDirection("Down")),

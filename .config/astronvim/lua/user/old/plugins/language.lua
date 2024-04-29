@@ -1,4 +1,17 @@
 return {
+	"AstroNvim/astrolsp",
+	optional = true,
+	opts = {
+		config = {
+			volar = {
+				init_options = {
+					vue = {
+						hybridMode = false,
+					},
+				},
+			},
+		},
+	},
 	-- syntax
 	{
 		"nvim-treesitter/nvim-treesitter",
@@ -42,6 +55,19 @@ return {
 				"tsserver",
 				"volar",
 				"yamlls",
+			}
+		end,
+	},
+	{
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		opts = function(_, opts)
+			opts.ensure_installed = {
+				"typescript-language-server",
+				"prettierd",
+				"vue-language-server",
+				"pyright",
+				"black",
+				"isort",
 			}
 		end,
 	},

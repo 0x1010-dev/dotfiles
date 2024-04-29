@@ -8,6 +8,9 @@ fi
 # zsh config path
 CONFIG=$HOME/.config/zsh
 
+# local configuration (not in .dotfiles)
+[[ ! -f $HOME/.zshlocal ]] || source $HOME/.zshlocal
+
 # load antigen
 source $CONFIG/antigen
 
@@ -15,41 +18,44 @@ source $CONFIG/antigen
 antigen use oh-my-zsh
 antigen bundle git
 antigen bundle rsync
-antigen bundle vscode
 antigen bundle vi-mode
-antigen bundle docker
-antigen bundle docker-compose
-antigen bundle poetry
-antigen bundle lukechilds/zsh-nvm
-antigen bundle greymd/docker-zsh-completion
 antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-syntax-highlighting
 antigen bundle MichaelAquilina/zsh-autoswitch-virtualenv
 
-if ! [ -f $HOME/.local/bin/zoxide ]; then
-    antigen bundle agkozak/zsh-z
-else
+if [[ -x $(command -v docker) ]]; then
+    antigen bundle docker
+    antigen bundle docker-compose
+fi
+
+if [[ -x $(command -v zoxide) ]]; then
     antigen bundle zoxide
+else
+    antigen bundle agkozak/zsh-z
+fi
+
+if [[ -x $(command -v tmux) ]]; then
+    antigen bundle tmux
+    typeset -g ZSH_TMUX_AUTOSTART=true
 fi
 
 # load theme
 antigen theme romkatv/powerlevel10k
 
-# apply
-antigen apply
-
 # load configuration
 [[ ! -f $CONFIG/p10k ]] || source $CONFIG/p10k
 [[ ! -f $CONFIG/hooks ]] || source $CONFIG/hooks
-[[ ! -f $CONFIG/aliases ]] || source $CONFIG/aliases
 [[ ! -f $CONFIG/functions ]] || source $CONFIG/functions
 [[ ! -f $CONFIG/variables ]] || source $CONFIG/variables
 
-# local configuration (not in .dotfiles)
-[[ ! -f $HOME/.zshlocal ]] || source $HOME/.zshlocal
+# apply
+antigen apply
 
-# iterm2 integration
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+# load aliases last
+[[ ! -f $CONFIG/aliases ]] || source $CONFIG/aliases
+
+# configuration
+typeset -g VI_MODE_SET_CURSOR=true
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k

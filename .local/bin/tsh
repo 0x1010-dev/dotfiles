@@ -2,6 +2,8 @@
 
 # configuration
 SSH_BASTION="tsh.bastion"
+SSHUTTLE_DEFAULT_OPTS=${SSHUTTLE_DEFAULT_OPTS:-"--dns -NHv"}
+SSHUTTLE_DEFAULT_TARGET=${SSHUTTLE_DEFAULT_TARGET:-"15.0.0.0/8"}
 
 # devtunnel process tracking
 PIDFILE="/tmp/tsh.pid"
@@ -115,7 +117,7 @@ usage() {
 	echo "Commands:"
 	echo "  cmd '<cmd>'               Executes command, interpolating the host and port"
 	echo '                            to the forwarded port as $host and $port.'
-	echo "  fs <remote> <local>       Mount remote filesystem."
+	echo "  mount <remote> <local>    Mount remote filesystem (using sshfs)."
 	echo "  fwd <remote> <local>      Forwards port to target host."
 	echo "  match <host>              Add Match entry to SSH config to ProxyJump using tunnel."
 	echo "  proxy                     Forwards traffic over SSH (using sshuttle)."
@@ -167,7 +169,7 @@ main() {
 			shift 2
 			;;
 
-		proxy | shell | fwd | fs | cmd | match | daemon)
+		proxy | shell | fwd | mount | cmd | match | daemon)
 			cmd="$1"
 			shift
 			break
@@ -206,11 +208,13 @@ main() {
 		;;
 
 	proxy)
+		opts=${opts:-$SSHUTTLE_DEFAULT_OPTS}
+		target=${*:-$SSHUTTLE_DEFAULT_TARGET}
 		log "Starting sshuttle session to target..."
 		if [[ -n $jump ]]; then
-			sshuttle -e "ssh -J $jump" $opts -x "localhost:$port" -r "$dest" "$@"
+			sshuttle -e "ssh -J $jump" $opts -x "localhost:$port" -r "$dest" "$target"
 		else
-			sshuttle $opts -x "localhost:$port" -r "$SSH_BASTION" "$@"
+			sshuttle $opts -x "localhost:$port" -r "$SSH_BASTION" "$target"
 		fi
 		;;
 
@@ -223,7 +227,7 @@ main() {
 		fi
 		;;
 
-	fs)
+	mount)
 		log "Mounting filesystem from target..."
 		if [[ -n $jump ]]; then
 			sshfs $dest:$* -o "ssh_command=ssh -J $jump" -f $opts
