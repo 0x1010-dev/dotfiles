@@ -1,2 +1,0 @@
-return "catppuccin"
--- return "kanagawa"

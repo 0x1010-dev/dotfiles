@@ -20,6 +20,9 @@ instance_count() {
 
 ((INSTANCE_ID = "$(instance_count) - 1"))
 
+# quote for regex match
+quoteRe() { sed -e 's/[^^]/[&]/g; s/\^/\\^/g; $!a\'$'\n''\\n' <<<"$1" | tr -d '\n'; }
+
 # logging
 log() {
 	echo "tsh[$INSTANCE_ID]: $1" >&2
@@ -85,7 +88,8 @@ setup_bastion() {
 
 # remove ssh bastion config
 cleanup_bastion() {
-	sed -i "/^Host $SSH_BASTION.*$/,/^$/d" ~/.ssh/config
+	# sed -i "/^Host $SSH_BASTION.*$/,/^$/d" ~/.ssh/config
+	sed -i -zE "s/Host $(quoteRe $SSH_BASTION)\n(\s+[^\n]+\n)*//gm" ~/.ssh/config
 }
 
 # cleanup on script exit
@@ -260,7 +264,8 @@ main() {
 		done
 
 		log "Removing Match entry from ssh config..."
-		sed -i "/^Match final host $*$/,/^$/d" ~/.ssh/config
+		# sed -i "/^Match final host $*$/,/^$/d" ~/.ssh/config
+		sed -i -zE "s/Match final host $(quoteRe $*)\n(\s+[^\n]+\n)*//gm" ~/.ssh/config
 		;;
 
 	daemon)
