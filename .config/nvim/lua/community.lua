@@ -21,14 +21,14 @@ return {
   -- Diagnostics
   { import = "astrocommunity.diagnostics.lsp_lines-nvim" },
   -- Editing Support
-  { import = "astrocommunity.editing-support.multicursors-nvim" },
   { import = "astrocommunity.editing-support.cutlass-nvim" },
-  -- { import = "astrocommunity.editing-support.conform-nvim" },
+  { import = "astrocommunity.editing-support.wildfire-nvim" },
+  { import = "astrocommunity.editing-support.vim-move" },
   { import = "astrocommunity.editing-support.suda-vim" },
+  -- Motion
+  { import = "astrocommunity.motion.mini-surround" },
   -- Utility
   { import = "astrocommunity.utility.noice-nvim" },
-  -- Recipes
-  -- { import = "astrocommunity.recipes.heirline-vscode-winbar" },
   -- Configuration
   {
     "EdenEast/nightfox.nvim",
@@ -50,17 +50,6 @@ return {
       debounce_delay = 3000,
       execution_message = {
         enabled = false,
-      },
-    },
-  },
-  {
-    "smoka7/multicursors.nvim",
-    keys = {
-      {
-        mode = { "v", "n" },
-        "<Leader>m",
-        "<Cmd>MCstart<CR>",
-        desc = "MultiCursor",
       },
     },
   },
