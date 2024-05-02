@@ -40,8 +40,6 @@ if [[ -x $(command -v tmux) ]]; then
     export ZSH_TMUX_AUTOCONNECT=true
     if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
         export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
-    else
-        export ZSH_TMUX_DEFAULT_SESSION_NAME="${ZSH_TMUX_DEFAULT_SESSION_NAME:-main}"
     fi
 fi
 
