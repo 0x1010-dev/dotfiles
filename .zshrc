@@ -1,3 +1,13 @@
+: ${ZSH_TMUX_DEFAULT_SESSION_NAME:-main}
+
+if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
+    export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
+fi
+
+if (( $+commands[tmux] )) && [ -z "$TMUX" ]; then
+    exec tmux new-session -A -s $ZSH_TMUX_DEFAULT_SESSION_NAME
+fi
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -34,14 +44,14 @@ else
     antigen bundle agkozak/zsh-z
 fi
 
-if [[ -x $(command -v tmux) ]]; then
-    antigen bundle tmux
-    export ZSH_TMUX_AUTOSTART=true
-    export ZSH_TMUX_AUTOCONNECT=true
-    if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
-        export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
-    fi
-fi
+# if [[ -x $(command -v tmux) ]]; then
+#     antigen bundle tmux
+#     export ZSH_TMUX_AUTOSTART=true
+#     export ZSH_TMUX_AUTOCONNECT=true
+#     if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
+#         export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
+#     fi
+# fi
 
 # load theme
 antigen theme romkatv/powerlevel10k
