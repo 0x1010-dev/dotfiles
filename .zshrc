@@ -36,6 +36,8 @@ fi
 
 if [[ -x $(command -v tmux) ]]; then
     antigen bundle tmux
+    export ZSH_TMUX_AUTOSTART=true
+    export ZSH_TMUX_AUTOCONNECT=true
 fi
 
 # load theme
