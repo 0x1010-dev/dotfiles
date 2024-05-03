@@ -1,3 +1,4 @@
+# atuomatically start tmux if available
 : ${ZSH_TMUX_DEFAULT_SESSION_NAME:-main}
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
@@ -40,18 +41,10 @@ fi
 
 if [[ -x $(command -v zoxide) ]]; then
     antigen bundle zoxide
+    alias cd="z"
 else
     antigen bundle agkozak/zsh-z
 fi
-
-# if [[ -x $(command -v tmux) ]]; then
-#     antigen bundle tmux
-#     export ZSH_TMUX_AUTOSTART=true
-#     export ZSH_TMUX_AUTOCONNECT=true
-#     if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
-#         export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
-#     fi
-# fi
 
 # load theme
 antigen theme romkatv/powerlevel10k
