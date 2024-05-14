@@ -36,6 +36,16 @@ antigen bundle zsh-users/zsh-autosuggestions
 antigen bundle zsh-users/zsh-syntax-highlighting
 antigen bundle MichaelAquilina/zsh-autoswitch-virtualenv
 
+# load theme
+antigen theme romkatv/powerlevel10k
+
+# load configuration
+[[ ! -f $CONFIG/p10k ]] || source $CONFIG/p10k
+[[ ! -f $CONFIG/hooks ]] || source $CONFIG/hooks
+[[ ! -f $CONFIG/functions ]] || source $CONFIG/functions
+[[ ! -f $CONFIG/variables ]] || source $CONFIG/variables
+
+# conditionally load plugins (after variables have been loaded)
 if [[ -x $(command -v docker) ]]; then
     antigen bundle docker
     antigen bundle docker-compose
@@ -47,15 +57,6 @@ if [[ -x $(command -v zoxide) ]]; then
 else
     antigen bundle agkozak/zsh-z
 fi
-
-# load theme
-antigen theme romkatv/powerlevel10k
-
-# load configuration
-[[ ! -f $CONFIG/p10k ]] || source $CONFIG/p10k
-[[ ! -f $CONFIG/hooks ]] || source $CONFIG/hooks
-[[ ! -f $CONFIG/functions ]] || source $CONFIG/functions
-[[ ! -f $CONFIG/variables ]] || source $CONFIG/variables
 
 # apply
 antigen apply
