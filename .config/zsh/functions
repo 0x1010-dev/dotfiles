@@ -11,3 +11,16 @@ fi
 zle -N _sgpt_zsh
 bindkey ^p _sgpt_zsh
 
+# tmux environment auto-update
+if [[ -n "$TMUX" ]]; then
+    function refresh {
+        eval $(tmux show-env -s SSH_AUTH_SOCK);
+        eval $(tmux show-env -s DISPLAY);
+    }
+else
+    function refresh { }
+fi
+
+function preexec {
+    refresh;
+}

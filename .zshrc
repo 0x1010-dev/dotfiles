@@ -66,14 +66,6 @@ antigen apply
 # configuration
 typeset -g VI_MODE_SET_CURSOR=true
 
-# automatic SSH_AUTH_SOCK fix for remote sessions on tmux
-if [[ -n $TMUX ]]; then
-    _fix_ssh_agent_in_tmux () { if [[ ! -S $SSH_AUTH_SOCK ]]; then eval export $(tmux show-env -s SSH_AUTH_SOCK); fi }
-    ssh () { _fix_ssh_agent_in_tmux; command ssh $@; }
-    scp () { _fix_ssh_agent_in_tmux; command scp $@; }
-    git () { _fix_ssh_agent_in_tmux; command git $@; }
-    rsync () { _fix_ssh_agent_in_tmux; command rsync $@; }
-fi
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
