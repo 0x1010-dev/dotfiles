@@ -23,7 +23,7 @@ CONFIG=$HOME/.config/zsh
 [[ ! -f $HOME/.zshlocal ]] || source $HOME/.zshlocal
 
 # load antigen
-source $CONFIG/antigen
+source $CONFIG/antigen.zsh
 
 # load plugins
 antigen use oh-my-zsh
