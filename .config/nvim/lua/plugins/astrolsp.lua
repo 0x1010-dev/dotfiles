@@ -15,6 +15,8 @@ return {
     on_attach = function(client, _)
       -- disable formatter for volar
       if client.name == "volar" then client.server_capabilities.documentFormattingProvider = false end
+      if client.name == "eslint" then client.server_capabilities.documentFormattingProvider = false end
+      if client.name == "typescript-tools" then client.server_capabilities.documentFormattingProvider = false end
     end,
   },
 }

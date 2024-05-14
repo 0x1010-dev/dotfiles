@@ -33,6 +33,11 @@ return {
         },
       },
     },
+    filetypes = {
+      extension = {
+        qml = "qmljs",
+      },
+    },
     mappings = {
       n = {
         -- better buffer navigation

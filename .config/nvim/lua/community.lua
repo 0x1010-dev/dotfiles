@@ -29,7 +29,22 @@ return {
   { import = "astrocommunity.motion.mini-surround" },
   -- Utility
   { import = "astrocommunity.utility.noice-nvim" },
+  -- Recipes
+  { import = "astrocommunity.recipes.heirline-vscode-winbar" },
+  { import = "astrocommunity.recipes.heirline-mode-text-statusline" },
   -- Configuration
+  {
+    "echasnovski/mini.map",
+    opts = {
+      symbols = {
+        scroll_view = "│",
+        scroll_line = "⣿",
+      },
+      window = {
+        focusable = true,
+      },
+    },
+  },
   {
     "EdenEast/nightfox.nvim",
     opts = {
