@@ -38,6 +38,11 @@ return {
         qml = "qmljs",
       },
     },
+    options = {
+      o = {
+        scrolloff = 15,
+      },
+    },
     mappings = {
       n = {
         -- better buffer navigation
