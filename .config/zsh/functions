@@ -24,3 +24,13 @@ fi
 function preexec {
     refresh;
 }
+
+# colorized printer logs
+plog() {
+    if [ "$#" -eq 1 ]; then
+        ssh $1 tail -f /tmp/printer.log
+    else
+        ssh $2 "find /tmp/ -type d -regex '.*/SESSION\.[0-9]+\.\LOGS' | sort -rV | tail +$1 | head -n 1 | xargs -I {} find {} -type f -name 'printer.*' | xargs zcat"
+    fi
+}
+

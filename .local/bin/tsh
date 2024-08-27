@@ -3,7 +3,7 @@
 # configuration
 SSH_BASTION="tsh.bastion"
 SSHUTTLE_DEFAULT_OPTS=${SSHUTTLE_DEFAULT_OPTS:-"--dns -NHv"}
-SSHUTTLE_DEFAULT_TARGET=${SSHUTTLE_DEFAULT_TARGET:-"15.0.0.0/8"}
+SSHUTTLE_DEFAULT_TARGET=${SSHUTTLE_DEFAULT_TARGET:-"15.0.0.0/8 172.20.0.0/16"}
 
 # devtunnel process tracking
 PIDFILE="/tmp/tsh.pid"
@@ -216,9 +216,9 @@ main() {
 		target=${*:-$SSHUTTLE_DEFAULT_TARGET}
 		log "Starting sshuttle session to target..."
 		if [[ -n $jump ]]; then
-			sshuttle -e "ssh -J $jump" $opts -x "localhost:$port" -r "$dest" "$target"
+			sshuttle -e "ssh -J $jump" $opts -x "localhost:$port" -r "$dest" $target
 		else
-			sshuttle $opts -x "localhost:$port" -r "$SSH_BASTION" "$target"
+			sshuttle $opts -x "localhost:$port" -r "$SSH_BASTION" $target
 		fi
 		;;
 

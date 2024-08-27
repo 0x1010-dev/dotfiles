@@ -27,12 +27,31 @@ return {
   { import = "astrocommunity.editing-support.suda-vim" },
   -- Motion
   { import = "astrocommunity.motion.mini-surround" },
+  -- Terminal Integration
+  -- { import = "astrocommunity.terminal-integration.vim-tmux-navigator" },
   -- Utility
   { import = "astrocommunity.utility.noice-nvim" },
   -- Recipes
   { import = "astrocommunity.recipes.heirline-vscode-winbar" },
   { import = "astrocommunity.recipes.heirline-mode-text-statusline" },
   -- Configuration
+  -- {
+  --   "christoomey/vim-tmux-navigator",
+  --   cmd = {
+  --     "TmuxNavigateLeft",
+  --     "TmuxNavigateDown",
+  --     "TmuxNavigateUp",
+  --     "TmuxNavigateRight",
+  --     "TmuxNavigatePrevious",
+  --   },
+  --   keys = {
+  --     { "<c-h>", "<cmd><C-U>TmuxNavigateLeft<cr>" },
+  --     { "<c-j>", "<cmd><C-U>TmuxNavigateDown<cr>" },
+  --     { "<c-k>", "<cmd><C-U>TmuxNavigateUp<cr>" },
+  --     { "<c-l>", "<cmd><C-U>TmuxNavigateRight<cr>" },
+  --     { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
+  --   },
+  -- },
   {
     "echasnovski/mini.map",
     opts = {

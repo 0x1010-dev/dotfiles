@@ -1,4 +1,4 @@
-# atuomatically start tmux if available
+# automatically start tmux if available
 : ${ZSH_TMUX_DEFAULT_SESSION_NAME:-main}
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
@@ -6,7 +6,7 @@ if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
 fi
 
 if (( $+commands[tmux] )) && [ -z "$TMUX" ]; then
-    exec tmux new-session -A -s $ZSH_TMUX_DEFAULT_SESSION_NAME
+    alias ta="tmux new-session -A -s $ZSH_TMUX_DEFAULT_SESSION_NAME"
 fi
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
