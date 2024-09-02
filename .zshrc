@@ -1,5 +1,5 @@
 # automatically start tmux if available
-: ${ZSH_TMUX_DEFAULT_SESSION_NAME:-main}
+: ${ZSH_TMUX_DEFAULT_SESSION_NAME:=main}
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
     export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
