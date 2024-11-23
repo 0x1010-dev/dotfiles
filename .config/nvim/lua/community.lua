@@ -82,9 +82,6 @@ return {
     "okuuva/auto-save.nvim",
     opts = {
       debounce_delay = 3000,
-      execution_message = {
-        enabled = false,
-      },
     },
   },
   {

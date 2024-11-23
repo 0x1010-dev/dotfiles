@@ -70,3 +70,4 @@ typeset -g VI_MODE_SET_CURSOR=true
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
+

@@ -5,6 +5,3 @@ alias vi="nvim"
 if [[ -x $(command -v lsd) ]]; then
   alias ls="lsd"
 fi
-
-# [hp] proxy for when on wifi
-alias wifiproxy="sshuttle -NHv -r corvallis 15.0.0.0/8"
