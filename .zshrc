@@ -52,8 +52,7 @@ if [[ -x $(command -v docker) ]]; then
 fi
 
 if [[ -x $(command -v zoxide) ]]; then
-    antigen bundle zoxide
-    alias cd="z"
+    eval "$(zoxide init --cmd cd zsh)"
 else
     antigen bundle agkozak/zsh-z
 fi
@@ -70,5 +69,7 @@ typeset -g VI_MODE_SET_CURSOR=true
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
+
+
 
 
