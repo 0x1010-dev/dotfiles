@@ -19,7 +19,9 @@ if [[ -n "$TMUX" ]] && [[ -n "$SSH_CLIENT" ]]; then
         eval $(tmux show-env -s DISPLAY);
     }
 else
-    function refresh { }
+    function refresh {
+        eval $(tmux show-env -s DISPLAY);
+    }
 fi
 
 function preexec {
