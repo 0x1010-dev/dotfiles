@@ -1,11 +1,11 @@
-# automatically start tmux if available
+# tmux attach alias (main session locally, ssh session over ssh)
 : ${ZSH_TMUX_DEFAULT_SESSION_NAME:=main}
 
 if [[ -n "$SSH_CLIENT" ]] || [[ -n "$SSH_TTY" ]]; then
     export ZSH_TMUX_DEFAULT_SESSION_NAME="ssh"
 fi
 
-if (( $+commands[tmux] )) && [ -z "$TMUX" ]; then
+if (($+commands[tmux])) && [ -z "$TMUX" ]; then
     alias ta="tmux new-session -A -s $ZSH_TMUX_DEFAULT_SESSION_NAME"
 fi
 
@@ -13,7 +13,17 @@ fi
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt share_history hist_ignore_all_dups hist_ignore_space hist_verify
+
+# fnm (only if installed — kept out of .zshenv so non-interactive shells stay lightweight)
+if (( $+commands[fnm] )); then
+    eval "$(fnm env)"
 fi
 
 # zsh config path
@@ -22,22 +32,33 @@ CONFIG=$HOME/.config/zsh
 # local configuration (not in .dotfiles)
 [[ ! -f $HOME/.zshlocal ]] || source $HOME/.zshlocal
 
-# load antigen
-source $CONFIG/antigen.zsh
+# --- plugins (Antidote, vendored in this repo as the antidote/ submodule) ---
+# The bundle list lives in .config/zsh/zsh_plugins.txt (edit there to change
+# plugins). `antidote load` compiles it into a cached static "source" file and
+# only rebuilds that when the list changes — effectively zero cost at startup.
 
-# load plugins
-antigen use oh-my-zsh
-antigen bundle git
-antigen bundle rsync
-antigen bundle vi-mode
-antigen bundle dotenv
-antigen bundle colored-man-pages
-antigen bundle zsh-users/zsh-autosuggestions
-antigen bundle zsh-users/zsh-syntax-highlighting
-antigen bundle MichaelAquilina/zsh-autoswitch-virtualenv
+# guards used by the "conditional:" bundles (must exist by the time the
+# static file is sourced)
+has-docker() { command -v docker >/dev/null 2>&1; }
+no-zoxide()  { ! command -v zoxide >/dev/null 2>&1; }
 
-# load theme
-antigen theme romkatv/powerlevel10k
+# completion system (oh-my-zsh used to run this for us) — before the plugins,
+# so their compdef calls work
+autoload -Uz compinit
+compinit
+
+ANTIDOTE_BUNDLES="$CONFIG/zsh_plugins.txt"
+ANTIDOTE_STATIC="${XDG_CACHE_HOME:-$HOME/.cache}/antidote/zsh_plugins.zsh"
+source "$HOME/.dotfiles/antidote/antidote.zsh"
+antidote load "$ANTIDOTE_BUNDLES" "$ANTIDOTE_STATIC"
+
+# vi-mode
+typeset -g VI_MODE_SET_CURSOR=true
+
+# zoxide (zsh-z loads from the plugin list only when zoxide is missing)
+if (( $+commands[zoxide] )); then
+    eval "$(zoxide init --cmd cd zsh)"
+fi
 
 # load configuration
 [[ ! -f $CONFIG/p10k ]] || source $CONFIG/p10k
@@ -45,32 +66,8 @@ antigen theme romkatv/powerlevel10k
 [[ ! -f $CONFIG/functions ]] || source $CONFIG/functions
 [[ ! -f $CONFIG/variables ]] || source $CONFIG/variables
 
-# conditionally load plugins (after variables have been loaded)
-if [[ -x $(command -v docker) ]]; then
-    antigen bundle docker
-    antigen bundle docker-compose
-fi
-
-if [[ -x $(command -v zoxide) ]]; then
-    eval "$(zoxide init --cmd cd zsh)"
-else
-    antigen bundle agkozak/zsh-z
-fi
-
-# apply
-antigen apply
-
 # load aliases last
 [[ ! -f $CONFIG/aliases ]] || source $CONFIG/aliases
 
-# configuration
-typeset -g VI_MODE_SET_CURSOR=true
-
-
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
-
-
-
-
-

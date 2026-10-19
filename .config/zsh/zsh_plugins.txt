@@ -1,0 +1,20 @@
+# Antidote plugin bundles — loaded by `antidote load` in .zshrc.
+# One bundle per line. Annotations: path:<file-or-dir>, conditional:<fn>,
+# branch:<b>, pre:<fn>, post:<fn>.
+# Order matters: keep zsh-syntax-highlighting last.
+# The conditional guards (has-docker / no-zoxide) are defined in .zshrc.
+
+# core
+ohmyzsh/ohmyzsh path:plugins/git/git.plugin.zsh
+ohmyzsh/ohmyzsh path:plugins/vi-mode/vi-mode.plugin.zsh
+ohmyzsh/ohmyzsh path:plugins/colored-man-pages/colored-man-pages.plugin.zsh
+romkatv/powerlevel10k path:powerlevel10k.zsh-theme
+
+# conditional
+ohmyzsh/ohmyzsh path:plugins/docker/docker.plugin.zsh conditional:has-docker
+ohmyzsh/ohmyzsh path:plugins/docker-compose/docker-compose.plugin.zsh conditional:has-docker
+agkozak/zsh-z conditional:no-zoxide
+
+# widget plugins (last)
+zsh-users/zsh-autosuggestions
+zsh-users/zsh-syntax-highlighting

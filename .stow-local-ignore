@@ -1,5 +1,7 @@
 \.git
 \.gitignore
 \.gitmodules
+antidote
+.DS_Store
 
 README.md

@@ -1,7 +1,13 @@
 # nvim
 alias vi="nvim"
 
-# lsd
-if [[ -x $(command -v lsd) ]]; then
-  alias ls="lsd"
-fi
+# directory listing (previously provided by oh-my-zsh's lib/directories.zsh)
+# -G = color output (macOS)
+alias ls='ls -G'
+alias l='ls -lag'
+alias la='ls -lAg'
+alias ll='ls -lG'
+alias lsa='ls -lGa'
+
+# color output (previously oh-my-zsh's lib/grep.zsh)
+alias grep='grep --color=auto'
