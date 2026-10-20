@@ -18,6 +18,7 @@ HISTSIZE=50000
 SAVEHIST=50000
 setopt share_history extended_history hist_ignore_all_dups hist_ignore_space \
     hist_reduce_blanks hist_verify
+setopt auto_cd interactive_comments no_beep
 
 # omz plugins write here; unset it falls back to an unwritable /completions
 ZSH_CACHE_DIR=$_zcache/omz
@@ -45,6 +46,29 @@ else
 fi
 for _c in $_compdef_queue; do eval "compdef $_c"; done
 unset _compdef_queue _zdump _zfresh _c
+
+# case-insensitive, then partial-word matching
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
+# '' = default colors when LS_COLORS is unset (macOS)
+if [[ -n $LS_COLORS ]]; then
+    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+else
+    zstyle ':completion:*' list-colors ''
+fi
+
+# keys: up/down search history by typed prefix; home/end/delete (normal + application mode)
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+for _km in viins vicmd; do
+    for _k in '^[[A' '^[OA'; do bindkey -M $_km $_k up-line-or-beginning-search; done
+    for _k in '^[[B' '^[OB'; do bindkey -M $_km $_k down-line-or-beginning-search; done
+    for _k in '^[[H' '^[OH' '^[[1~'; do bindkey -M $_km $_k beginning-of-line; done
+    for _k in '^[[F' '^[OF' '^[[4~'; do bindkey -M $_km $_k end-of-line; done
+    bindkey -M $_km '^[[3~' delete-char
+done
+unset _km _k
 
 (( ! $+commands[zoxide] )) || eval "$(zoxide init zsh)"
 (( ! $+commands[fnm] ))    || eval "$(fnm env)"
