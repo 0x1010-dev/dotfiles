@@ -2,7 +2,7 @@
 # One bundle per line. Annotations: path:<file-or-dir>, conditional:<fn>,
 # branch:<b>, pre:<fn>, post:<fn>.
 # Order matters: keep zsh-syntax-highlighting last.
-# The conditional guards (has-docker / no-zoxide / has-tty) are defined in .zshrc.
+# The conditional guards (no-zoxide / has-tty) are defined in .zshrc.
 
 # core (p10k is tty-gated: gitstatusd can't start in tty-less `zsh -i -c`
 # sessions and spams stderr)
@@ -12,8 +12,6 @@ ohmyzsh/ohmyzsh path:plugins/colored-man-pages/colored-man-pages.plugin.zsh
 romkatv/powerlevel10k path:powerlevel10k.zsh-theme conditional:has-tty
 
 # conditional
-ohmyzsh/ohmyzsh path:plugins/docker/docker.plugin.zsh conditional:has-docker
-ohmyzsh/ohmyzsh path:plugins/docker-compose/docker-compose.plugin.zsh conditional:has-docker
 agkozak/zsh-z conditional:no-zoxide
 
 # widget plugins (last)

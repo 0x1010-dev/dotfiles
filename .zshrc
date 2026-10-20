@@ -34,7 +34,6 @@ CONFIG=$HOME/.config/zsh
 
 # guards used by the "conditional:" bundles (must exist by the time the
 # static file is sourced)
-has-docker() { command -v docker >/dev/null 2>&1; }
 no-zoxide()  { ! command -v zoxide >/dev/null 2>&1; }
 # p10k/gitstatus need a real terminal; in tty-less `zsh -i -c` wrappers
 # gitstatusd aborts (`setopt monitor` fails) and spams stderr before the
@@ -43,9 +42,8 @@ has-tty()    { [[ -t 0 && -t 1 && -t 2 ]]; }
 
 # oh-my-zsh plugins assume OMZ core exported $ZSH_CACHE_DIR (OMZ defaults it
 # to ~/.cache/omz). We only source the plugins, so define it ourselves and
-# pre-create the dir tree BEFORE the bundles load — otherwise e.g. the docker
-# plugin's completion bootstrap would try to write /completions/ (unwritable)
-# and crash zsh.
+# pre-create the dir tree BEFORE the bundles load — otherwise plugin
+# bootstraps can try to write /completions/ (unwritable) and crash zsh.
 ZSH_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/omz"
 mkdir -p -- "$ZSH_CACHE_DIR/completions"
 fpath=("$ZSH_CACHE_DIR/completions" $fpath)
