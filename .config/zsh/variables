@@ -1,3 +1,2 @@
-export GOPATH="$HOME/.go"
-export PATH=$HOME/.local/bin:$HOME/.go/bin:$HOME/.yarn/bin:$HOME/.cargo/bin:$PATH
+typeset -U path PATH
 export EDITOR=nvim

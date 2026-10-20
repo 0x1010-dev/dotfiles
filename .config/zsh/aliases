@@ -1,13 +1,14 @@
 # nvim
 alias vi="nvim"
 
-# directory listing (previously provided by oh-my-zsh's lib/directories.zsh)
-# -G = color output (macOS)
-alias ls='ls -G'
+# BSD ls: -G = color; GNU ls: -G = no group
+case $OSTYPE in
+    darwin*) alias ls='ls -G' ;;
+    *)       alias ls='ls --color=auto' ;;
+esac
 alias l='ls -lag'
 alias la='ls -lAg'
-alias ll='ls -lG'
-alias lsa='ls -lGa'
+alias ll='ls -l'
+alias lsa='ls -la'
 
-# color output (previously oh-my-zsh's lib/grep.zsh)
 alias grep='grep --color=auto'

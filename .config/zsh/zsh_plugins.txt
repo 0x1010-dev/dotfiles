@@ -1,19 +1,11 @@
-# Antidote plugin bundles — loaded by `antidote load` in .zshrc.
-# One bundle per line. Annotations: path:<file-or-dir>, conditional:<fn>,
-# branch:<b>, pre:<fn>, post:<fn>.
-# Order matters: keep zsh-syntax-highlighting last.
-# The conditional guards (no-zoxide / has-tty) are defined in .zshrc.
-
-# core (p10k is tty-gated: gitstatusd can't start in tty-less `zsh -i -c`
-# sessions and spams stderr)
+# conditional: guards are defined in .zshrc
 ohmyzsh/ohmyzsh path:plugins/git/git.plugin.zsh
 ohmyzsh/ohmyzsh path:plugins/vi-mode/vi-mode.plugin.zsh
 ohmyzsh/ohmyzsh path:plugins/colored-man-pages/colored-man-pages.plugin.zsh
+# gitstatusd fails without a tty (e.g. `zsh -i -c`)
 romkatv/powerlevel10k path:powerlevel10k.zsh-theme conditional:has-tty
-
-# conditional
 agkozak/zsh-z conditional:no-zoxide
 
-# widget plugins (last)
+# keep zsh-syntax-highlighting last
 zsh-users/zsh-autosuggestions
 zsh-users/zsh-syntax-highlighting

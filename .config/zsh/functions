@@ -1,38 +1,22 @@
-# refresh tmux-provided env (SSH_AUTH_SOCK / DISPLAY) before each command.
-# Registered via zsh's core add-zsh-hook (previously shadowed the preexec
-# mechanism and ran `tmux` in shells that don't have it). Skipped entirely
-# outside a tmux session or when tmux isn't installed.
+# pick up SSH_AUTH_SOCK/DISPLAY from tmux after reattach
 _zsh_tmux_refresh_env() {
   (( $+commands[tmux] )) || return 0
   [[ -z $TMUX ]] && return 0
-  local name val
-  for name in SSH_AUTH_SOCK DISPLAY; do
-    val=$(tmux show-env -v "$name" 2> /dev/null)
-    [[ -n $val ]] && export "$name=$val"
+  local line
+  for line in ${(f)"$(tmux show-env 2> /dev/null)"}; do
+    case $line in
+      SSH_AUTH_SOCK=?*|DISPLAY=?*) export "$line" ;;
+    esac
   done
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec _zsh_tmux_refresh_env
-
-# Shell-GPT --shell integration (requires `sgpt` on $PATH).
-# Uncomment if you install it:
-#_sgpt_zsh() {
-#  if [[ -n "$BUFFER" ]]; then
-#      _sgpt_prev_cmd=$BUFFER
-#      BUFFER+="⌛"
-#      zle -I && zle redisplay
-#      BUFFER=$(sgpt --shell <<< "$_sgpt_prev_cmd" --no-interaction)
-#      zle end-of-line
-#  fi
-#}
-#zle -N _sgpt_zsh
-#bindkey ^l _sgpt_zsh
 
 # colorized printer logs
 plog() {
   if [ "$#" -eq 1 ]; then
     ssh $1 tail -f /tmp/printer.log
   else
-    ssh $2 "find /tmp/ -type d -regex '.*/SESSION\.[0-9]+\.\LOGS' | sort -rV | tail +$1 | head -n 1 | xargs -I {} find {} -type f -name 'printer.*' | xargs zcat"
+    ssh $2 "find /tmp/ -type d -regex '.*/SESSION\.[0-9]+\.\LOGS' | sort -rV | tail -n +$1 | head -n 1 | xargs -I {} find {} -type f -name 'printer.*' | xargs zcat"
   fi
 }

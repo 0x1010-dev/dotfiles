@@ -6,8 +6,9 @@ SSHUTTLE_DEFAULT_OPTS=${SSHUTTLE_DEFAULT_OPTS:-"--dns -NHv"}
 SSHUTTLE_DEFAULT_TARGET=${SSHUTTLE_DEFAULT_TARGET:-"0.0.0.0/0"}
 
 # devtunnel process tracking
-PIDFILE="/tmp/tsh.pid"
-LOGFILE="/tmp/tsh.log"
+umask 077
+PIDFILE="${TMPDIR:-/tmp}/tsh.pid"
+LOGFILE="${TMPDIR:-/tmp}/tsh.log"
 
 # devtunnel path
 DEVTUNNEL=$(command -v devtunnel)
@@ -15,13 +16,25 @@ DEVTUNNEL=$(command -v devtunnel)
 # instance counter
 SCRIPTNAME=$0
 instance_count() {
-	pgrep -aflc "bash.*$SCRIPTNAME"
+	local pids
+	pids=$(pgrep -af "bash.*$SCRIPTNAME")
+	if [[ -n $pids ]]; then echo "$pids" | wc -l | tr -d ' '; else echo 0; fi
 }
 
 ((INSTANCE_ID = "$(instance_count) - 1"))
 
-# quote for regex match
-quoteRe() { sed -e 's/[^^]/[&]/g; s/\^/\\^/g; $!a\'$'\n''\\n' <<<"$1" | tr -d '\n'; }
+# remove an ssh config block: exact header line + following indented lines (BSD/GNU portable)
+remove_ssh_block() {
+	local tmp
+	tmp=$(mktemp) || return 1
+	awk -v hdr="$1" '
+		skip && /^[ \t]+/ { next }
+		{ skip = 0 }
+		$0 == hdr { skip = 1; next }
+		{ print }
+	' ~/.ssh/config >"$tmp" && cat "$tmp" >~/.ssh/config
+	rm -f "$tmp"
+}
 
 # logging
 log() {
@@ -88,8 +101,7 @@ setup_bastion() {
 
 # remove ssh bastion config
 cleanup_bastion() {
-	# sed -i "/^Host $SSH_BASTION.*$/,/^$/d" ~/.ssh/config
-	sed -i -zE "s/Host $(quoteRe $SSH_BASTION)\n(\s+[^\n]+\n)*//gm" ~/.ssh/config
+	remove_ssh_block "Host $SSH_BASTION"
 }
 
 # cleanup on script exit
@@ -173,7 +185,7 @@ main() {
 			shift 2
 			;;
 
-		proxy | shell | fwd | mount | cmd | match | daemon)
+		proxy | shell | fwd | forward | mount | cmd | match | daemon)
 			cmd="$1"
 			shift
 			break
@@ -264,8 +276,7 @@ main() {
 		done
 
 		log "Removing Match entry from ssh config..."
-		# sed -i "/^Match final host $*$/,/^$/d" ~/.ssh/config
-		sed -i -zE "s/Match final host $(quoteRe $*)\n(\s+[^\n]+\n)*//gm" ~/.ssh/config
+		remove_ssh_block "Match final host $*"
 		;;
 
 	daemon)

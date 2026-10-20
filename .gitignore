@@ -6,7 +6,7 @@
 # where a global gitignore may not exist)
 .DS_Store
 *~
-#*#
+\#*#
 
 # zsh bytecode + completion dumps that can be written next to repo files
 *.zwc
