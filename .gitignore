@@ -1,27 +1,5 @@
-.config/nvim/lazy-lock.json
-.local/share
-.local/state
-
-# OS / editor noise (keep this copy in-repo so it also protects on other machines,
-# where a global gitignore may not exist)
 .DS_Store
 *~
 \#*#
-
-# zsh bytecode + completion dumps that can be written next to repo files
 *.zwc
 .zcompdump*
-
-# btop rewrites its own config on exit — treat as machine state
-.config/btop/
-
-# machine / app-generated state (not part of the curated dotfiles)
-.config/wireshark/
-.config/github-copilot/
-.config/nx/
-.config/httpie/
-.config/pip/
-.config/uv/
-
-# uv creates interpreter symlinks in ~/.local/bin
-.local/bin/python*

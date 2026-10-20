@@ -12,7 +12,9 @@ cd ~/.dotfiles
 
 `setup.sh` checks prerequisites (Homebrew on macOS, GNU Stow everywhere), pulls
 the `antidote/` submodule if missing, runs `stow .`, and prints the manual
-follow-ups. Re-run `stow .` after pulling to link new files.
+follow-ups. Re-run `stow .` after pulling to link new files. `.stowrc` sets
+`--no-folding`, so `~/.config` and `~/.local` stay real directories and app
+state never lands in the repo.
 
 ## Layout
 

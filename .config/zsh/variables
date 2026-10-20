@@ -1,2 +1,0 @@
-typeset -U path PATH
-export EDITOR=nvim

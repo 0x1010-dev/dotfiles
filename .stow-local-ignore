@@ -1,6 +1,7 @@
 \.git
 \.gitignore
 \.gitmodules
+\.stowrc
 antidote
 .DS_Store
 

@@ -109,8 +109,7 @@ cleanup() {
 	# if last instance to exit (there will be 2 instances because of the subshell)
 	if [[ $(instance_count) -eq 2 ]]; then
 		local pid
-		pid=$(get_devtunnel_pid)
-		if [[ $? -eq 0 ]]; then
+		if pid=$(get_devtunnel_pid); then
 			log "No more clients running, closing devtunnel instance."
 			kill "$pid"
 			rm -f "$PIDFILE" "$LOGFILE"
@@ -132,6 +131,7 @@ usage() {
 	echo
 	echo "Commands:"
 	echo "  cmd '<cmd>'               Executes command, interpolating the host and port"
+	# shellcheck disable=SC2016
 	echo '                            to the forwarded port as $host and $port.'
 	echo "  mount <remote> <local>    Mount remote filesystem (using sshfs)."
 	echo "  fwd <remote> <local>      Forwards port to target host."
@@ -145,7 +145,7 @@ usage() {
 
 # command parsing and execution
 main() {
-	local opts
+	local -a opts=()
 	local target
 	local cmd
 
@@ -192,7 +192,7 @@ main() {
 			;;
 
 		*)
-			opts="$opts $1"
+			opts+=("$1")
 			shift
 			;;
 		esac
@@ -217,38 +217,40 @@ main() {
 	shell)
 		log "Starting SSH session to target..."
 		if [[ -n $jump ]]; then
-			ssh $opts -J "$jump" "$dest" "$@"
+			ssh "${opts[@]}" -J "$jump" "$dest" "$@"
 		else
-			ssh $opts "$SSH_BASTION" "$@"
+			# shellcheck disable=SC2029
+			ssh "${opts[@]}" "$SSH_BASTION" "$@"
 		fi
 		;;
 
 	proxy)
-		opts=${opts:-$SSHUTTLE_DEFAULT_OPTS}
-		target=${*:-$SSHUTTLE_DEFAULT_TARGET}
+		local -a targets=("$@")
+		((${#opts[@]})) || read -ra opts <<<"$SSHUTTLE_DEFAULT_OPTS"
+		((${#targets[@]})) || read -ra targets <<<"$SSHUTTLE_DEFAULT_TARGET"
 		log "Starting sshuttle session to target..."
 		if [[ -n $jump ]]; then
-			sshuttle -e "ssh -J $jump" $opts -x "localhost:$port" -r "$dest" $target
+			sshuttle -e "ssh -J $jump" "${opts[@]}" -x "localhost:$port" -r "$dest" "${targets[@]}"
 		else
-			sshuttle $opts -x "localhost:$port" -r "$SSH_BASTION" $target
+			sshuttle "${opts[@]}" -x "localhost:$port" -r "$SSH_BASTION" "${targets[@]}"
 		fi
 		;;
 
 	fwd | forward)
 		log "Forwarding port $2 -> $1..."
 		if [[ -n $jump ]]; then
-			ssh $opts -J "$jump" -N -L "$2:localhost:$1" "$dest"
+			ssh "${opts[@]}" -J "$jump" -N -L "$2:localhost:$1" "$dest"
 		else
-			ssh $opts -p "$port" -N -L "$2:localhost:$1" "$SSH_BASTION"
+			ssh "${opts[@]}" -p "$port" -N -L "$2:localhost:$1" "$SSH_BASTION"
 		fi
 		;;
 
 	mount)
 		log "Mounting filesystem from target..."
 		if [[ -n $jump ]]; then
-			sshfs $dest:$* -o "ssh_command=ssh -J $jump" -f $opts
+			sshfs "$dest:$1" "${@:2}" -o "ssh_command=ssh -J $jump" -f "${opts[@]}"
 		else
-			sshfs $SSH_BASTION:$* -f $opts
+			sshfs "$SSH_BASTION:$1" "${@:2}" -f "${opts[@]}"
 		fi
 		;;
 
