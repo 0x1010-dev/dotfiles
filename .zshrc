@@ -82,3 +82,24 @@ fi
 
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
+
+# TEMP diagnostics (remove after debugging the prompt-switching issue):
+# log prompt + relevant option/function state at every pre_prompt render and
+# at shell exit, so a broken session is captured before it dies.
+_p9k_diag() {
+  local f="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-diag.log"
+  printf 't=%s PROMPT=%q nps=%d p10k=%d gs_which=%s gs_state=%s\n' \
+    "${EPOCHSECONDS}" "${PROMPT}" "$(setopt | grep -c no_prompt_subst)" \
+    "${+functions[p10k]}" "$(whence -w gitstatus 2>/dev/null)" \
+    "${_GITSTATUS_STATE_git:-unset}" >> "$f" 2>/dev/null
+}
+add-zsh-hook precmd _p9k_diag 2>/dev/null
+_p9k_diag_exit() {
+  local f="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-diag.log"
+  printf 't=%s EXIT PROMPT=%q nps=%d p10k=%d gs_which=%s gs_state=%s ppid=%d\n' \
+    "${EPOCHSECONDS}" "${PROMPT}" "$(setopt | grep -c no_prompt_subst)" \
+    "${+functions[p10k]}" "$(whence -w gitstatus 2>/dev/null)" \
+    "${_GITSTATUS_STATE_git:-unset}" "${PPID}" >> "$f" 2>/dev/null
+}
+add-zsh-hook zshexit _p9k_diag_exit 2>/dev/null
+# --- end TEMP diagnostics
