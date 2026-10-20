@@ -83,23 +83,28 @@ fi
 # To customize prompt, run `p10k configure` or edit ~/.config/zsh/p10k.
 [[ ! -f ~/.config/zsh/p10k ]] || source ~/.config/zsh/p10k
 
-# TEMP diagnostics (remove after debugging the prompt-switching issue):
-# log prompt + relevant option/function state at every pre_prompt render and
-# at shell exit, so a broken session is captured before it dies.
+# TEMP diagnostics v2 (remove after debugging the prompt-switching issue)
+_p9k_logfile="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-diag.log"
+_p9k_t() { [ -t "$1" ] && printf 1 || printf 0; }
 _p9k_diag() {
-  local f="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-diag.log"
-  printf 't=%s PROMPT=%q nps=%d p10k=%d gs_which=%s gs_state=%s\n' \
-    "${EPOCHSECONDS}" "${PROMPT}" "$(setopt | grep -c no_prompt_subst)" \
-    "${+functions[p10k]}" "$(whence -w gitstatus 2>/dev/null)" \
-    "${_GITSTATUS_STATE_git:-unset}" >> "$f" 2>/dev/null
+  printf 't=%s pre t0=%s t1=%s t2=%s p10k=%d vi=%s gs=%s\n' \
+    "${EPOCHSECONDS}" "$(_p9k_t 0)" "$(_p9k_t 1)" "$(_p9k_t 2)" \
+    "${+functions[p10k]}" "${+functions[vi_mode_prompt_info]}" \
+    "$(whence -w gitstatus 2>/dev/null)" >> "$_p9k_logfile" 2>/dev/null
 }
 add-zsh-hook precmd _p9k_diag 2>/dev/null
 _p9k_diag_exit() {
-  local f="${XDG_CACHE_HOME:-$HOME/.cache}/zsh-diag.log"
-  printf 't=%s EXIT PROMPT=%q nps=%d p10k=%d gs_which=%s gs_state=%s ppid=%d\n' \
-    "${EPOCHSECONDS}" "${PROMPT}" "$(setopt | grep -c no_prompt_subst)" \
-    "${+functions[p10k]}" "$(whence -w gitstatus 2>/dev/null)" \
-    "${_GITSTATUS_STATE_git:-unset}" "${PPID}" >> "$f" 2>/dev/null
+  printf 't=%s EXIT p10k=%d vi=%d nps=%d ppid=%d\n' \
+    "${EPOCHSECONDS}" "${+functions[p10k]}" "${+functions[vi_mode_prompt_info]}" \
+    "$(setopt | grep -c no_prompt_subst)" "${PPID}" >> "$_p9k_logfile" 2>/dev/null
 }
 add-zsh-hook zshexit _p9k_diag_exit 2>/dev/null
+# one-shot startup snapshot at the very end of rc
+{
+  _ptty=1; has-tty 2>/dev/null || _ptty=0
+  printf 't=%s START pid=%d ppid=%d t0=%s t1=%s t2=%s hastty=%s flags=%s shlvl=%s term=%s zdotdir=%s\n' \
+    "${EPOCHSECONDS}" "$$" "${PPID}" "$(_p9k_t 0)" "$(_p9k_t 1)" "$(_p9k_t 2)" \
+    "$_ptty" "$-" "${SHLVL:-1}" "${TERM:-}" "${ZDOTDIR:--}" \
+    >> "$_p9k_logfile" 2>/dev/null
+} 2>/dev/null
 # --- end TEMP diagnostics
